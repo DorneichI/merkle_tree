@@ -12,6 +12,7 @@ void hash_file(const char *dir, const char *file, unsigned char *out_hash) {
   snprintf(fullpath, sizeof(fullpath), "%s/%s", dir, file);
   FILE *f = fopen(fullpath, "rb");
   if (!f) {
+    memset(out_hash, 0, EVP_MAX_MD_SIZE);
     return;
   }
   EVP_DigestUpdate(ctx, (unsigned char *)file, strlen(file));

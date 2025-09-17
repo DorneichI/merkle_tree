@@ -57,6 +57,9 @@ Node *create_tree_from_dir(const char *dir) {
   struct dirent *entry;
   DIR *dp;
   dp = opendir(dir);
+  if (!dp) {
+    return NULL;
+  }
 
   Node **leaves = NULL;
   int count = 0;
