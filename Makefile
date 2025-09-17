@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -I/opt/homebrew/opt/openssl@3/include -I.
 LDFLAGS = -L/opt/homebrew/opt/openssl@3/lib -lssl -lcrypto
 TARGET = equal
-SRC = merkle_equal.c merkle.c
+SRC = merkle_equal.c merkle.c print_utils.c
 
 all: $(TARGET)
 
