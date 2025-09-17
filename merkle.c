@@ -2,6 +2,7 @@
 #include <openssl/evp.h>
 #include <string.h>
 
+#include "hash_utils.h"
 #include "merkle.h"
 
 void create_hash_of_nodes(const Node node1, const Node node2,
@@ -33,31 +34,18 @@ Node *create_node(Node *child1, Node *child2) {
   return node;
 }
 
-Node *create_leaf_from_filepath(const char *dir, const char *filepath) {
+Node *create_leaf(const unsigned char *hash) {
   Node *node = malloc(sizeof(Node));
-
-  EVP_MD_CTX *ctx = EVP_MD_CTX_new();
-  EVP_DigestInit_ex(ctx, EVP_sha256(), NULL);
-  unsigned char buf[4096];
-  size_t n;
-  char fullpath[PATH_MAX];
-  snprintf(fullpath, sizeof(fullpath), "%s/%s", dir, filepath);
-  FILE *f = fopen(fullpath, "rb");
-  if (!f) {
-    return NULL;
-  }
-  EVP_DigestUpdate(ctx, (unsigned char *)filepath, strlen(filepath));
-  while ((n = fread(buf, 1, sizeof(buf), f)) > 0)
-    EVP_DigestUpdate(ctx, buf, n);
-  fclose(f);
-  unsigned int outlen = 0;
-  EVP_DigestFinal_ex(ctx, node->hash, &outlen);
+  memcpy(node->hash, hash, EVP_MAX_MD_SIZE);
   node->left = NULL;
   node->right = NULL;
   return node;
 }
 
-Node *duplicate_node(Node *src) {
+Node *duplicate_leaf(Node *src) {
+  if (src->left != NULL || src->right != NULL) {
+    return NULL;
+  }
   Node *copy = malloc(sizeof(Node));
   memcpy(copy->hash, src->hash, EVP_MAX_MD_SIZE);
   copy->left = NULL;
@@ -79,7 +67,10 @@ Node *create_tree_from_dir(const char *dir) {
     if (entry->d_type == DT_DIR)
       return NULL;
     leaves = realloc(leaves, sizeof(Node *) * (count + 1));
-    leaves[count++] = create_leaf_from_filepath(dir, entry->d_name);
+
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    hash_file(dir, entry->d_name, hash);
+    leaves[count++] = create_leaf(hash);
   }
 
   while (count > 1) {
@@ -90,7 +81,7 @@ Node *create_tree_from_dir(const char *dir) {
       if (i + 1 < count) {
         parents[i / 2] = create_node(leaves[i], leaves[i + 1]);
       } else {
-        parents[i / 2] = create_node(leaves[i], duplicate_node(leaves[i]));
+        parents[i / 2] = create_node(leaves[i], duplicate_leaf(leaves[i]));
       }
     }
     free(leaves);
