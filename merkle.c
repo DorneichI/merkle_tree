@@ -4,7 +4,7 @@
 
 #include "merkle.h"
 
-void create_hash_of_nodes(Node node1, Node node2,
+void create_hash_of_nodes(const Node node1, const Node node2,
                           unsigned char out_hash[EVP_MAX_MD_SIZE]) {
   EVP_MD_CTX *ctx = EVP_MD_CTX_new();
   EVP_DigestInit_ex(ctx, EVP_sha256(), NULL);
