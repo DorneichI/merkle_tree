@@ -1,13 +1,13 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11 -I/opt/homebrew/opt/openssl@3/include
+CFLAGS = -Wall -Wextra -std=c11 -I/opt/homebrew/opt/openssl@3/include -I.
 LDFLAGS = -L/opt/homebrew/opt/openssl@3/lib -lssl -lcrypto
 TARGET = equal
-SRC = merkle_equal.c
+SRC = merkle_equal.c merkle.c
 
 all: $(TARGET)
 
 $(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $(SRC) $(LDFLAGS)
 
 clean:
 	rm -f $(TARGET)

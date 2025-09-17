@@ -4,18 +4,14 @@
 #include <openssl/evp.h>
 #include <limits.h>
 
+#include "merkle.h"
+
 void print_hash_hex(const unsigned char *hash, size_t len) {
     for (size_t i = 0; i < len; i++) {
         printf("%02x", hash[i]);
     }
     printf("\n");
 }
-
-typedef struct Node {
-    unsigned char hash[EVP_MAX_MD_SIZE];
-    struct Node* left;
-    struct Node* right;
-} Node;
 
 void print_tree_in_order(Node *node) {
     if (node == NULL) {
@@ -26,15 +22,6 @@ void print_tree_in_order(Node *node) {
     print_tree_in_order(node->right);
 
 }
-
-void create_hash_of_nodes(Node node1, Node node2, unsigned char out_hash[EVP_MAX_MD_SIZE]) {
-    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
-    EVP_DigestInit_ex(ctx, EVP_sha256(), NULL);
-    EVP_DigestUpdate(ctx, node1.hash, EVP_MAX_MD_SIZE);
-    EVP_DigestUpdate(ctx, node2.hash, EVP_MAX_MD_SIZE);
-    unsigned int outlen = 0;
-    EVP_DigestFinal_ex(ctx, out_hash, &outlen);
-};
 
 Node* create_leaf_from_filepath(const char *dir, const char *filepath) {
     Node* node = malloc(sizeof(Node));
@@ -51,20 +38,11 @@ Node* create_leaf_from_filepath(const char *dir, const char *filepath) {
     }
     EVP_DigestUpdate(ctx, (unsigned char *)filepath, strlen(filepath));
     while ((n = fread(buf, 1, sizeof(buf), f)) > 0) EVP_DigestUpdate(ctx, buf, n);
+    fclose(f);
     unsigned int outlen = 0;
     EVP_DigestFinal_ex(ctx, node->hash, &outlen);
     node->left = NULL;
     node->right = NULL;
-    return node;
-}
-
-Node* create_node(Node *child1, Node *child2) {
-    Node* node = malloc(sizeof(Node));
-    unsigned char hash[EVP_MAX_MD_SIZE];
-    create_hash_of_nodes(*child1, *child2, hash);
-    memcpy(node->hash, hash, EVP_MAX_MD_SIZE);
-    node->left = child1;
-    node->right = child2;
     return node;
 }
 
