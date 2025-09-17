@@ -14,5 +14,4 @@ void print_tree_in_order(Node *node) {
     print_tree_in_order(node->left);
     print_hash_hex(node->hash, EVP_MAX_MD_SIZE);
     print_tree_in_order(node->right);
-
 }
