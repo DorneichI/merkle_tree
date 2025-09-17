@@ -14,6 +14,15 @@ void create_hash_of_nodes(Node node1, Node node2,
   EVP_DigestFinal_ex(ctx, out_hash, &outlen);
 };
 
+void free_tree(Node *node) {
+  if (node == NULL) {
+    return;
+  }
+  free_tree(node->left);
+  free_tree(node->right);
+  free(node);
+}
+
 Node *create_node(Node *child1, Node *child2) {
   Node *node = malloc(sizeof(Node));
   unsigned char hash[EVP_MAX_MD_SIZE];
@@ -48,6 +57,14 @@ Node *create_leaf_from_filepath(const char *dir, const char *filepath) {
   return node;
 }
 
+Node *duplicate_node(Node *src) {
+  Node *copy = malloc(sizeof(Node));
+  memcpy(copy->hash, src->hash, EVP_MAX_MD_SIZE);
+  copy->left = NULL;
+  copy->right = NULL;
+  return copy;
+}
+
 Node *create_tree_from_dir(const char *dir) {
   struct dirent *entry;
   DIR *dp;
@@ -73,7 +90,7 @@ Node *create_tree_from_dir(const char *dir) {
       if (i + 1 < count) {
         parents[i / 2] = create_node(leaves[i], leaves[i + 1]);
       } else {
-        parents[i / 2] = create_node(leaves[i], leaves[i]);
+        parents[i / 2] = create_node(leaves[i], duplicate_node(leaves[i]));
       }
     }
     free(leaves);
