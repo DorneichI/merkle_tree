@@ -7,8 +7,6 @@ int merkle_equal(const char *dir1, const char *dir2) {
   Node *tree1 = create_tree_from_dir(dir1);
   Node *tree2 = create_tree_from_dir(dir2);
   int result = memcmp(tree1->hash, tree2->hash, EVP_MAX_MD_SIZE) == 0;
-  print_tree_in_order(tree1);
-  print_tree_in_order(tree2);
   free_tree(tree1);
   free_tree(tree2);
   return result;
